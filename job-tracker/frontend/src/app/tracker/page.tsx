@@ -1,0 +1,132 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { Loader2, GripVertical } from "lucide-react";
+
+const COLUMNS = [
+  { key: "applied", label: "Applied", color: "bg-blue-500" },
+  { key: "interview", label: "Interview", color: "bg-yellow-500" },
+  { key: "offer", label: "Offer", color: "bg-green-500" },
+  { key: "rejected", label: "Rejected", color: "bg-red-500" },
+  { key: "ghosted", label: "Ghosted", color: "bg-gray-400" },
+];
+
+interface AppCard {
+  id: string;
+  job_id: string;
+  title: string;
+  company: string;
+  location?: string;
+  match_score?: number;
+  applied_date?: string;
+  notes?: string;
+}
+
+type Board = Record<string, AppCard[]>;
+
+export default function TrackerPage() {
+  const [board, setBoard] = useState<Board>({});
+  const [loading, setLoading] = useState(true);
+  const [dragging, setDragging] = useState<{ card: AppCard; from: string } | null>(null);
+
+  useEffect(() => {
+    api.getKanban().then(setBoard).catch(console.error).finally(() => setLoading(false));
+  }, []);
+
+  const handleDragStart = (card: AppCard, from: string) => {
+    setDragging({ card, from });
+  };
+
+  const handleDrop = async (to: string) => {
+    if (!dragging || dragging.from === to) return;
+    const { card, from } = dragging;
+
+    // Optimistic update
+    setBoard((prev) => {
+      const updated = { ...prev };
+      updated[from] = updated[from].filter((c) => c.id !== card.id);
+      updated[to] = [card, ...(updated[to] || [])];
+      return updated;
+    });
+    setDragging(null);
+
+    try {
+      await api.updateApplication(card.id, { status: to });
+    } catch (e) {
+      console.error("Failed to update status", e);
+    }
+  };
+
+  const scoreColor = (score?: number) => {
+    if (!score) return "text-gray-400";
+    if (score >= 75) return "text-green-600";
+    if (score >= 50) return "text-yellow-600";
+    return "text-red-500";
+  };
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center gap-3 text-gray-500">
+        <Loader2 className="animate-spin w-5 h-5" />
+        Loading tracker…
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Application Tracker</h1>
+      <p className="text-gray-500 mb-6">Drag cards between columns to update status</p>
+
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {COLUMNS.map(({ key, label, color }) => (
+          <div
+            key={key}
+            className="w-60 shrink-0"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => handleDrop(key)}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
+              <span className="font-semibold text-sm text-gray-700">{label}</span>
+              <span className="ml-auto text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                {board[key]?.length || 0}
+              </span>
+            </div>
+
+            <div className="space-y-2 min-h-[100px]">
+              {(board[key] || []).map((card) => (
+                <div
+                  key={card.id}
+                  draggable
+                  onDragStart={() => handleDragStart(card, key)}
+                  className="bg-white border border-gray-200 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
+                >
+                  <div className="flex items-start gap-1.5">
+                    <GripVertical className="w-3.5 h-3.5 text-gray-300 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-900 truncate">{card.title}</p>
+                      <p className="text-xs text-gray-500 truncate">{card.company}</p>
+                      {card.location && <p className="text-xs text-gray-400 truncate">{card.location}</p>}
+                      {card.match_score && (
+                        <p className={`text-xs font-semibold mt-1.5 ${scoreColor(card.match_score)}`}>
+                          {card.match_score}% match
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {(board[key] || []).length === 0 && (
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-16 flex items-center justify-center">
+                  <p className="text-xs text-gray-300">Drop here</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
