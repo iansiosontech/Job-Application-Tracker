@@ -29,6 +29,10 @@ export const api = {
     const { data } = await client.delete(`/api/resume/${id}`);
     return data;
   },
+  setActiveResume: async (id: string) => {
+    const { data } = await client.patch(`/api/resume/${id}/activate`);
+    return data;
+  },
 
   // Jobs
   createJob: async (job: {

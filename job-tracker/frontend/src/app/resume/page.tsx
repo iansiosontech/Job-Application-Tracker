@@ -49,6 +49,17 @@ export default function ResumePage() {
     }
   };
 
+  const handleSetActive = async (id: string) => {
+    try {
+      await api.setActiveResume(id);
+      setResumes((prev) =>
+        prev.map((r) => ({ ...r, is_active: r.id === id }))
+      );
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "Failed to set active");
+    }
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "application/pdf": [".pdf"] },
@@ -119,7 +130,16 @@ export default function ResumePage() {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {r.is_active && <CheckCircle className="w-5 h-5 text-indigo-400" />}
+                {r.is_active ? (
+                  <CheckCircle className="w-5 h-5 text-indigo-400" />
+                ) : (
+                  <button
+                    onClick={() => handleSetActive(r.id)}
+                    className="text-xs bg-white/[0.06] hover:bg-indigo-500/20 text-[#c0c0c8] hover:text-indigo-300 px-2.5 py-1 rounded-lg border border-white/[0.08] transition-colors"
+                  >
+                    Set Active
+                  </button>
+                )}
                 <button
                   onClick={() => handleDelete(r.id)}
                   className="text-[#5a5a64] hover:text-red-400 transition-colors p-1"
