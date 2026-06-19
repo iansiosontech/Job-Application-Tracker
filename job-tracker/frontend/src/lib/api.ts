@@ -25,6 +25,10 @@ export const api = {
     const { data } = await client.get("/api/resume/active");
     return data;
   },
+  deleteResume: async (id: string) => {
+    const { data } = await client.delete(`/api/resume/${id}`);
+    return data;
+  },
 
   // Jobs
   createJob: async (job: {
@@ -69,6 +73,10 @@ export const api = {
     update: { status?: string; notes?: string }
   ) => {
     const { data } = await client.patch(`/api/applications/${appId}`, update);
+    return data;
+  },
+  deleteApplication: async (id: string) => {
+    const { data } = await client.delete(`/api/applications/${id}`);
     return data;
   },
 };

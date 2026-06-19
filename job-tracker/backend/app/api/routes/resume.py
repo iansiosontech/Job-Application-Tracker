@@ -91,11 +91,15 @@ def get_active_resume(db: Session = Depends(get_db)):
 
 @router.delete("/{resume_id}")
 def delete_resume(resume_id: str, db: Session = Depends(get_db)):
-    """Delete a resume."""
+    """Delete a resume and its linked analyses."""
+    from app.models.models import JobAnalysis
     user = get_or_create_mock_user(db)
     resume = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == user.id).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
+
+    # Remove linked analyses first (avoids foreign key constraint error)
+    db.query(JobAnalysis).filter(JobAnalysis.resume_id == resume_id).delete()
 
     if os.path.exists(resume.file_path):
         os.remove(resume.file_path)

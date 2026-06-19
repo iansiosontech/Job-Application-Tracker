@@ -1,8 +1,9 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Loader2, GripVertical } from "lucide-react";
+import { Loader2, GripVertical, Trash2 } from "lucide-react";
 
 const COLUMNS = [
   { key: "applied", label: "Applied", color: "#60a5fa" },
@@ -53,6 +54,19 @@ export default function TrackerPage() {
     }
   };
 
+  const handleDelete = async (id: string, status: string) => {
+    if (!confirm("Remove this application?")) return;
+    setBoard((prev) => ({
+      ...prev,
+      [status]: prev[status].filter((c) => c.id !== id),
+    }));
+    try {
+      await api.deleteApplication(id);
+    } catch (e) {
+      console.error("Failed to delete", e);
+    }
+  };
+
   const scoreColor = (score?: number) => {
     if (!score) return "#8b8b96";
     if (score >= 75) return "#4ade80";
@@ -96,7 +110,7 @@ export default function TrackerPage() {
                   key={card.id}
                   draggable
                   onDragStart={() => handleDragStart(card, key)}
-                  className="bg-[#16161f] border border-white/[0.08] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-white/[0.15] transition-colors"
+                  className="group bg-[#16161f] border border-white/[0.08] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-white/[0.15] transition-colors"
                 >
                   <div className="flex items-start gap-1.5">
                     <GripVertical className="w-3.5 h-3.5 text-[#5a5a64] mt-0.5 shrink-0" />
@@ -110,6 +124,13 @@ export default function TrackerPage() {
                         </p>
                       )}
                     </div>
+                    <button
+                      onClick={() => handleDelete(card.id, key)}
+                      className="text-[#5a5a64] hover:text-red-400 transition-colors p-0.5 shrink-0 opacity-0 group-hover:opacity-100"
+                      title="Remove"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}

@@ -1,9 +1,10 @@
 "use client";
 
+import { Upload, CheckCircle, FileText, Loader2, Trash2 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { api } from "@/lib/api";
-import { Upload, CheckCircle, FileText, Loader2 } from "lucide-react";
+
 
 interface Resume {
   id: string;
@@ -37,6 +38,16 @@ export default function ResumePage() {
       setUploading(false);
     }
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this resume?")) return;
+    try {
+      await api.deleteResume(id);
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "Failed to delete");
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -107,7 +118,16 @@ export default function ResumePage() {
                   </div>
                 )}
               </div>
-              {r.is_active && <CheckCircle className="w-5 h-5 text-indigo-400 shrink-0" />}
+              <div className="flex items-center gap-2 shrink-0">
+                {r.is_active && <CheckCircle className="w-5 h-5 text-indigo-400" />}
+                <button
+                  onClick={() => handleDelete(r.id)}
+                  className="text-[#5a5a64] hover:text-red-400 transition-colors p-1"
+                  title="Delete resume"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
