@@ -1,1 +1,22 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment - protects your keys
+.env
+.env.local
+.env.*.local
+
+# Mac junk
+.DS_Store
+
+# Next.js build
+.next/
+out/
+
+# Python
+__pycache__/
+venv/
+.venv/
+
+# Uploads
+uploads/
