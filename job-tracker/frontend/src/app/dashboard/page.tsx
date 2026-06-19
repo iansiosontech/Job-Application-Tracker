@@ -2,83 +2,178 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Briefcase, FileText, Target, TrendingUp } from "lucide-react";
+import { Briefcase, Target, TrendingUp, Percent } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
-interface Stats {
-  total: number;
-  applied: number;
-  interview: number;
-  offer: number;
-  rejected: number;
+const USER_NAME = "Ian";
+
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  applied: { label: "Applied", color: "#60a5fa" },
+  interview: { label: "Interview", color: "#fbbf24" },
+  offer: { label: "Offer", color: "#4ade80" },
+  rejected: { label: "Rejected", color: "#f87171" },
+  ghosted: { label: "Ghosted", color: "#9ca3af" },
+};
+
+interface Card {
+  id: string;
+  title: string;
+  company: string;
+  location?: string;
+  match_score?: number;
+  applied_date?: string;
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function scoreColor(score?: number) {
+  if (!score) return "#8b8b96";
+  if (score >= 75) return "#4ade80";
+  if (score >= 50) return "#fbbf24";
+  return "#f87171";
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [board, setBoard] = useState<Record<string, Card[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const kanban = await api.getKanban();
-        setStats({
-          total: Object.values(kanban).flat().length,
-          applied: kanban.applied?.length || 0,
-          interview: kanban.interview?.length || 0,
-          offer: kanban.offer?.length || 0,
-          rejected: kanban.rejected?.length || 0,
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStats();
+    api
+      .getKanban()
+      .then(setBoard)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
+  const all = Object.values(board).flat();
+  const total = all.length;
+  const interview = board.interview?.length || 0;
+  const offer = board.offer?.length || 0;
+  const scored = all.filter((c) => typeof c.match_score === "number");
+  const avgMatch =
+    scored.length > 0
+      ? Math.round(scored.reduce((s, c) => s + (c.match_score || 0), 0) / scored.length)
+      : 0;
+
+  const pieData = Object.entries(STATUS_META)
+    .map(([key, meta]) => ({ name: meta.label, value: board[key]?.length || 0, color: meta.color }))
+    .filter((d) => d.value > 0);
+
+  const recent = [...all]
+    .sort((a, b) => (b.applied_date || "").localeCompare(a.applied_date || ""))
+    .slice(0, 5);
+
   const cards = [
-    { label: "Total Applications", value: stats?.total ?? 0, icon: Briefcase, color: "bg-blue-500" },
-    { label: "Interviews", value: stats?.interview ?? 0, icon: Target, color: "bg-green-500" },
-    { label: "Offers", value: stats?.offer ?? 0, icon: TrendingUp, color: "bg-purple-500" },
-    { label: "Rejected", value: stats?.rejected ?? 0, icon: FileText, color: "bg-red-400" },
+    { label: "Applications", value: total, icon: Briefcase, color: "#60a5fa", bg: "rgba(59,130,246,0.15)" },
+    { label: "Interviews", value: interview, icon: Target, color: "#4ade80", bg: "rgba(34,197,94,0.15)" },
+    { label: "Offers", value: offer, icon: TrendingUp, color: "#c084fc", bg: "rgba(168,85,247,0.15)" },
+    { label: "Avg Match", value: `${avgMatch}%`, icon: Percent, color: "#a5b4fc", bg: "rgba(99,102,241,0.15)" },
   ];
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p className="text-gray-500 mb-8">Your job search at a glance</p>
+    <div className="p-8 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white mb-1">
+          {greeting()}, {USER_NAME}
+        </h1>
+        <p className="text-[#8b8b96]">Your job search at a glance</p>
+      </div>
 
+      {/* Stat cards */}
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-28 bg-[#16161f] rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map((card) => (
-            <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3">
-              <div className={`w-9 h-9 ${card.color} rounded-lg flex items-center justify-center`}>
-                <card.icon className="w-4 h-4 text-white" />
+            <div key={card.label} className="bg-[#16161f] rounded-xl border border-white/[0.08] p-5 flex flex-col gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: card.bg }}>
+                <card.icon className="w-4 h-4" style={{ color: card.color }} />
               </div>
               <div>
-                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-                <p className="text-sm text-gray-500 mt-0.5">{card.label}</p>
+                <p className="text-3xl font-bold text-white">{card.value}</p>
+                <p className="text-sm text-[#8b8b96] mt-0.5">{card.label}</p>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <div className="mt-10 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-6">
-        <h2 className="font-semibold text-indigo-900 mb-1">Getting Started</h2>
-        <ol className="text-sm text-indigo-700 space-y-1 list-decimal list-inside">
-          <li>Upload your resume under <strong>Resume</strong></li>
-          <li>Add a job description under <strong>Jobs</strong></li>
-          <li>Run AI analysis to get a match score</li>
-          <li>Track your applications on the <strong>Tracker</strong> board</li>
-        </ol>
-      </div>
+      {/* Charts + recent row */}
+      {!loading && total > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
+          {/* Status breakdown */}
+          <div className="lg:col-span-2 bg-[#16161f] border border-white/[0.08] rounded-xl p-5">
+            <h2 className="text-white font-semibold text-sm mb-4">Status Breakdown</h2>
+            <div className="flex items-center gap-4">
+              <div style={{ width: 140, height: 140 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2}>
+                      {pieData.map((d, i) => (
+                        <Cell key={i} fill={d.color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: "#0d0d14", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff", fontSize: 12 }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 space-y-2">
+                {pieData.map((d) => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
+                    <span className="text-[#8b8b96] text-xs flex-1">{d.name}</span>
+                    <span className="text-white text-xs font-medium">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Recent applications */}
+          <div className="lg:col-span-3 bg-[#16161f] border border-white/[0.08] rounded-xl p-5">
+            <h2 className="text-white font-semibold text-sm mb-4">Recent Applications</h2>
+            <div className="space-y-2">
+              {recent.map((app) => (
+                <div key={app.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{app.title}</p>
+                    <p className="text-[#8b8b96] text-xs truncate">{app.company}</p>
+                  </div>
+                  {typeof app.match_score === "number" && (
+                    <span className="text-xs font-semibold shrink-0 ml-3" style={{ color: scoreColor(app.match_score) }}>
+                      {app.match_score}%
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && total === 0 && (
+        <div className="mt-10 bg-[#16161f] border border-white/[0.08] rounded-xl p-6">
+          <h2 className="font-semibold text-white mb-3">Getting Started</h2>
+          <ol className="text-sm text-[#8b8b96] space-y-1.5 list-decimal list-inside">
+            <li>Upload your resume under <span className="text-[#a5b4fc]">Resume</span></li>
+            <li>Add a job description under <span className="text-[#a5b4fc]">Jobs</span></li>
+            <li>Run AI analysis to get a match score</li>
+            <li>Track your applications on the <span className="text-[#a5b4fc]">Tracker</span> board</li>
+          </ol>
+        </div>
+      )}
     </div>
   );
 }

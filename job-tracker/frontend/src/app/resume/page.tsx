@@ -46,68 +46,68 @@ export default function ResumePage() {
   });
 
   return (
-    <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Resume</h1>
-      <p className="text-gray-500 mb-6">Upload your PDF resume — AI will extract your skills automatically</p>
+    <div className="p-8 max-w-3xl min-h-screen">
+      <h1 className="text-2xl font-bold text-white mb-1">Resume</h1>
+      <p className="text-[#8b8b96] mb-6">Upload your PDF resume — AI will extract your skills automatically</p>
 
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
-          isDragActive ? "border-indigo-400 bg-indigo-50" : "border-gray-300 hover:border-indigo-300 hover:bg-gray-50"
+          isDragActive ? "border-indigo-400 bg-indigo-500/10" : "border-white/[0.12] hover:border-indigo-400/50 hover:bg-white/[0.02]"
         }`}
       >
         <input {...getInputProps()} />
         {uploading ? (
-          <div className="flex flex-col items-center gap-3 text-indigo-600">
+          <div className="flex flex-col items-center gap-3 text-indigo-400">
             <Loader2 className="w-8 h-8 animate-spin" />
             <p className="font-medium">Uploading & analyzing…</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 text-gray-500">
+          <div className="flex flex-col items-center gap-3 text-[#8b8b96]">
             <Upload className="w-8 h-8" />
-            <p className="font-medium text-gray-700">Drop your PDF here, or click to browse</p>
+            <p className="font-medium text-white">Drop your PDF here, or click to browse</p>
             <p className="text-sm">PDF only · Max 10MB</p>
           </div>
         )}
       </div>
 
-      {error && <p className="mt-3 text-red-600 text-sm">{error}</p>}
+      {error && <p className="mt-3 text-red-400 text-sm">{error}</p>}
 
       {resumes.length > 0 && (
         <div className="mt-8 space-y-3">
-          <h2 className="font-semibold text-gray-800">Uploaded Resumes</h2>
+          <h2 className="font-semibold text-white">Uploaded Resumes</h2>
           {resumes.map((r) => (
             <div
               key={r.id}
-              className={`bg-white border rounded-xl p-4 flex items-start gap-3 ${
-                r.is_active ? "border-indigo-300 ring-1 ring-indigo-200" : "border-gray-200"
+              className={`bg-[#16161f] border rounded-xl p-4 flex items-start gap-3 ${
+                r.is_active ? "border-indigo-500/40 ring-1 ring-indigo-500/20" : "border-white/[0.08]"
               }`}
             >
-              <FileText className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+              <FileText className="w-5 h-5 text-[#8b8b96] mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-gray-900 truncate">{r.filename}</p>
+                  <p className="font-medium text-white truncate">{r.filename}</p>
                   {r.is_active && (
-                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-medium">
                       Active
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-0.5">Version {r.version}</p>
+                <p className="text-sm text-[#8b8b96] mt-0.5">Version {r.version}</p>
                 {r.extracted_skills?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {r.extracted_skills.slice(0, 12).map((s) => (
-                      <span key={s} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                      <span key={s} className="text-xs bg-white/[0.05] text-[#c0c0c8] px-2 py-0.5 rounded-full">
                         {s}
                       </span>
                     ))}
                     {r.extracted_skills.length > 12 && (
-                      <span className="text-xs text-gray-400">+{r.extracted_skills.length - 12} more</span>
+                      <span className="text-xs text-[#8b8b96]">+{r.extracted_skills.length - 12} more</span>
                     )}
                   </div>
                 )}
               </div>
-              {r.is_active && <CheckCircle className="w-5 h-5 text-indigo-500 shrink-0" />}
+              {r.is_active && <CheckCircle className="w-5 h-5 text-indigo-400 shrink-0" />}
             </div>
           ))}
         </div>

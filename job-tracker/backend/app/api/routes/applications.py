@@ -26,12 +26,22 @@ def create_application(data: ApplicationCreate, db: Session = Depends(get_db)):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    # Grab the most recent analysis for this job to copy its match score
+    from app.models.models import JobAnalysis
+    analysis = (
+        db.query(JobAnalysis)
+        .filter(JobAnalysis.job_id == data.job_id)
+        .order_by(JobAnalysis.created_at.desc())
+        .first()
+    )
+
     app = Application(
         user_id=user.id,
         job_id=data.job_id,
         status=data.status,
         notes=data.notes,
         applied_date=datetime.utcnow(),
+        match_score=analysis.match_score if analysis else None,
     )
     db.add(app)
     db.commit()

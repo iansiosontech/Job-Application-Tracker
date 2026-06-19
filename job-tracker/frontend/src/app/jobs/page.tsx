@@ -22,6 +22,9 @@ interface Analysis {
   cover_letter?: string;
 }
 
+const inputClass =
+  "w-full bg-[#0d0d14] border border-white/[0.1] text-white rounded-lg px-3 py-2 text-sm placeholder:text-[#5a5a64] focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40";
+
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [form, setForm] = useState({ title: "", company: "", description: "", url: "", location: "" });
@@ -94,71 +97,45 @@ export default function JobsPage() {
   };
 
   const scoreColor = (score: number) =>
-    score >= 75 ? "text-green-600 bg-green-50" :
-    score >= 50 ? "text-yellow-600 bg-yellow-50" :
-    "text-red-600 bg-red-50";
+    score >= 75 ? "text-green-400 bg-green-500/15" :
+    score >= 50 ? "text-yellow-400 bg-yellow-500/15" :
+    "text-red-400 bg-red-500/15";
 
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Jobs</h1>
-      <p className="text-gray-500 mb-6">Paste a job description and get AI-powered match analysis</p>
+    <div className="p-8 max-w-5xl min-h-screen">
+      <h1 className="text-2xl font-bold text-white mb-1">Jobs</h1>
+      <p className="text-[#8b8b96] mb-6">Paste a job description and get AI-powered match analysis</p>
 
       {/* Add Job Form */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8">
-        <h2 className="font-semibold text-gray-800 mb-4">Add New Job</h2>
+      <div className="bg-[#16161f] border border-white/[0.08] rounded-xl p-6 mb-8">
+        <h2 className="font-semibold text-white mb-4">Add New Job</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Job Title *</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder="Software Engineer Intern"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-            />
+            <label className="block text-xs font-medium text-[#8b8b96] mb-1">Job Title *</label>
+            <input className={inputClass} placeholder="Software Engineer Intern" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Company *</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder="Acme Corp"
-              value={form.company}
-              onChange={(e) => setForm({ ...form, company: e.target.value })}
-            />
+            <label className="block text-xs font-medium text-[#8b8b96] mb-1">Company *</label>
+            <input className={inputClass} placeholder="Acme Corp" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Location</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder="Remote / Taipei"
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-            />
+            <label className="block text-xs font-medium text-[#8b8b96] mb-1">Location</label>
+            <input className={inputClass} placeholder="Remote / Taipei" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Job URL</label>
-            <input
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              placeholder="https://..."
-              value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-            />
+            <label className="block text-xs font-medium text-[#8b8b96] mb-1">Job URL</label>
+            <input className={inputClass} placeholder="https://..." value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} />
           </div>
         </div>
         <div className="mb-4">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Job Description (paste here for AI analysis)</label>
-          <textarea
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
-            rows={6}
-            placeholder="Paste the full job description..."
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-          />
+          <label className="block text-xs font-medium text-[#8b8b96] mb-1">Job Description (paste here for AI analysis)</label>
+          <textarea className={`${inputClass} resize-none`} rows={6} placeholder="Paste the full job description..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         </div>
-        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
         <button
           onClick={handleSubmit}
           disabled={submitting || !form.title || !form.company}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
           {submitting ? "Adding…" : "Add Job"}
@@ -168,50 +145,50 @@ export default function JobsPage() {
       <div className="grid grid-cols-5 gap-6">
         {/* Jobs List */}
         <div className="col-span-2 space-y-2">
-          <h2 className="font-semibold text-gray-800 mb-3">Saved Jobs ({jobs.length})</h2>
+          <h2 className="font-semibold text-white mb-3">Saved Jobs ({jobs.length})</h2>
           {jobs.map((job) => (
             <button
               key={job.id}
               onClick={() => handleAnalyze(job)}
-              className={`w-full text-left bg-white border rounded-xl p-4 hover:border-indigo-300 transition-colors ${
-                selectedJob?.id === job.id ? "border-indigo-400 ring-1 ring-indigo-200" : "border-gray-200"
+              className={`w-full text-left bg-[#16161f] border rounded-xl p-4 hover:border-indigo-500/40 transition-colors ${
+                selectedJob?.id === job.id ? "border-indigo-500/50 ring-1 ring-indigo-500/20" : "border-white/[0.08]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900 text-sm">{job.title}</p>
-                  <p className="text-xs text-gray-500">{job.company}</p>
-                  {job.location && <p className="text-xs text-gray-400">{job.location}</p>}
+                  <p className="font-medium text-white text-sm">{job.title}</p>
+                  <p className="text-xs text-[#8b8b96]">{job.company}</p>
+                  {job.location && <p className="text-xs text-[#5a5a64]">{job.location}</p>}
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <ChevronRight className="w-4 h-4 text-[#5a5a64]" />
               </div>
               {job.extracted_skills && job.extracted_skills.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {job.extracted_skills.slice(0, 4).map((s) => (
-                    <span key={s} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{s}</span>
+                    <span key={s} className="text-xs bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded-full">{s}</span>
                   ))}
                 </div>
               )}
             </button>
           ))}
           {jobs.length === 0 && (
-            <p className="text-gray-400 text-sm text-center py-8">No jobs yet — add one above</p>
+            <p className="text-[#5a5a64] text-sm text-center py-8">No jobs yet — add one above</p>
           )}
         </div>
 
         {/* Analysis Panel */}
         <div className="col-span-3">
           {analyzing && (
-            <div className="bg-white border border-gray-200 rounded-xl p-8 flex flex-col items-center gap-3">
-              <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-              <p className="text-gray-600 font-medium">Analyzing match…</p>
+            <div className="bg-[#16161f] border border-white/[0.08] rounded-xl p-8 flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+              <p className="text-[#8b8b96] font-medium">Analyzing match…</p>
             </div>
           )}
 
           {analysis && !analyzing && (
-            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+            <div className="bg-[#16161f] border border-white/[0.08] rounded-xl p-6 space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">{selectedJob?.title} @ {selectedJob?.company}</h2>
+                <h2 className="font-semibold text-white">{selectedJob?.title} @ {selectedJob?.company}</h2>
                 <span className={`text-2xl font-bold px-3 py-1 rounded-lg ${scoreColor(analysis.match_score)}`}>
                   {analysis.match_score}%
                 </span>
@@ -219,18 +196,18 @@ export default function JobsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-green-700 mb-1.5">✓ Matching Skills</p>
+                  <p className="text-xs font-semibold text-green-400 mb-1.5">✓ Matching Skills</p>
                   <div className="flex flex-wrap gap-1">
                     {analysis.matching_skills.map((s) => (
-                      <span key={s} className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{s}</span>
+                      <span key={s} className="text-xs bg-green-500/15 text-green-300 px-2 py-0.5 rounded-full">{s}</span>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-red-600 mb-1.5">✗ Missing Skills</p>
+                  <p className="text-xs font-semibold text-red-400 mb-1.5">✗ Missing Skills</p>
                   <div className="flex flex-wrap gap-1">
                     {analysis.missing_skills.map((s) => (
-                      <span key={s} className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded-full">{s}</span>
+                      <span key={s} className="text-xs bg-red-500/15 text-red-300 px-2 py-0.5 rounded-full">{s}</span>
                     ))}
                   </div>
                 </div>
@@ -238,10 +215,10 @@ export default function JobsPage() {
 
               {analysis.resume_suggestions?.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-700 mb-2">Resume Suggestions</p>
+                  <p className="text-xs font-semibold text-[#c0c0c8] mb-2">Resume Suggestions</p>
                   <ul className="space-y-1">
                     {analysis.resume_suggestions.map((s, i) => (
-                      <li key={i} className="text-sm text-gray-600 flex gap-2">
+                      <li key={i} className="text-sm text-[#8b8b96] flex gap-2">
                         <span className="text-indigo-400">→</span> {s}
                       </li>
                     ))}
@@ -251,8 +228,8 @@ export default function JobsPage() {
 
               {analysis.cover_letter ? (
                 <div>
-                  <p className="text-xs font-semibold text-gray-700 mb-2">Cover Letter</p>
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto font-sans">
+                  <p className="text-xs font-semibold text-[#c0c0c8] mb-2">Cover Letter</p>
+                  <pre className="text-sm text-[#c0c0c8] whitespace-pre-wrap bg-[#0d0d14] border border-white/[0.06] rounded-lg p-4 max-h-48 overflow-y-auto font-sans">
                     {analysis.cover_letter}
                   </pre>
                 </div>
@@ -260,7 +237,7 @@ export default function JobsPage() {
                 <button
                   onClick={handleCoverLetter}
                   disabled={generatingCL}
-                  className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-2 bg-white/[0.06] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/[0.1] disabled:opacity-50 transition-colors border border-white/[0.08]"
                 >
                   {generatingCL ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   {generatingCL ? "Generating…" : "Generate Cover Letter"}
@@ -268,9 +245,9 @@ export default function JobsPage() {
               )}
 
               {/* Track this Application */}
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-2 border-t border-white/[0.06]">
                 {tracked ? (
-                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                  <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
                     <Check className="w-4 h-4" />
                     Added to your tracker — check the Tracker board!
                   </div>
@@ -278,7 +255,7 @@ export default function JobsPage() {
                   <button
                     onClick={handleTrack}
                     disabled={tracking}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-500 disabled:opacity-50 transition-colors"
                   >
                     {tracking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     {tracking ? "Adding…" : "Track this Application"}
@@ -289,8 +266,8 @@ export default function JobsPage() {
           )}
 
           {!analysis && !analyzing && (
-            <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-10 text-center">
-              <p className="text-gray-400 text-sm">Click a job to run AI match analysis</p>
+            <div className="bg-[#16161f]/50 border border-dashed border-white/[0.1] rounded-xl p-10 text-center">
+              <p className="text-[#5a5a64] text-sm">Click a job to run AI match analysis</p>
             </div>
           )}
         </div>
