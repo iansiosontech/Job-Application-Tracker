@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-import { Loader2, Plus, ChevronRight } from "lucide-react";
+import { Loader2, Plus, ChevronRight, Check } from "lucide-react";
 
 interface Job {
   id: string;
@@ -30,6 +30,8 @@ export default function JobsPage() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingCL, setGeneratingCL] = useState(false);
+  const [tracking, setTracking] = useState(false);
+  const [tracked, setTracked] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function JobsPage() {
   const handleAnalyze = async (job: Job) => {
     setSelectedJob(job);
     setAnalysis(null);
+    setTracked(false);
     setAnalyzing(true);
     try {
       const resume = await api.getActiveResume();
@@ -74,6 +77,19 @@ export default function JobsPage() {
       setAnalysis((prev) => prev ? { ...prev, cover_letter: result.cover_letter } : prev);
     } finally {
       setGeneratingCL(false);
+    }
+  };
+
+  const handleTrack = async () => {
+    if (!selectedJob) return;
+    setTracking(true);
+    try {
+      await api.createApplication(selectedJob.id);
+      setTracked(true);
+    } catch (e: any) {
+      alert(e?.response?.data?.detail || "Failed to add to tracker");
+    } finally {
+      setTracking(false);
     }
   };
 
@@ -250,6 +266,25 @@ export default function JobsPage() {
                   {generatingCL ? "Generating…" : "Generate Cover Letter"}
                 </button>
               )}
+
+              {/* Track this Application */}
+              <div className="pt-2 border-t border-gray-100">
+                {tracked ? (
+                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                    <Check className="w-4 h-4" />
+                    Added to your tracker — check the Tracker board!
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleTrack}
+                    disabled={tracking}
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  >
+                    {tracking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {tracking ? "Adding…" : "Track this Application"}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

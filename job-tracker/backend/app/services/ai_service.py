@@ -3,7 +3,7 @@ import json
 from app.core.config import settings
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.0-flash")
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
 
 def extract_skills_from_job(job_description: str) -> dict:

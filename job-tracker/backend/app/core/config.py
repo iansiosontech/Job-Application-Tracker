@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/job_tracker"
 
-    # Anthropic
+    # Gemini
     GEMINI_API_KEY: str = ""
 
     # Auth (Clerk)
