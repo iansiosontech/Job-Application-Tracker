@@ -7,7 +7,7 @@ An AI-powered job application tracker that scores your resume against job descri
 
 ---
 
-## ✨ Features
+## ✨ Features 
 
 - **📄 Resume Upload & Parsing** — Upload a PDF resume; AI extracts your skills automatically. Supports multiple resume versions with a "Set Active" selector.
 - **🔍 Job Description Analysis** — Paste any job description; AI extracts required skills, experience level, and requirements.

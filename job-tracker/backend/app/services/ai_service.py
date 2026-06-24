@@ -1,6 +1,8 @@
 import google.generativeai as genai
 import json
 from app.core.config import settings
+import httpx
+from bs4 import BeautifulSoup
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash-lite")
@@ -83,3 +85,52 @@ Write a professional cover letter (3-4 paragraphs). Be specific and connect resu
 
     response = model.generate_content(prompt)
     return response.text.strip()
+
+def fetch_job_from_url(url: str) -> str:
+    """Fetch a job posting URL and return cleaned readable text."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+    }
+    try:
+        resp = httpx.get(url, headers=headers, timeout=15, follow_redirects=True)
+        resp.raise_for_status()
+    except Exception as e:
+        raise ValueError(f"Could not fetch the URL: {e}")
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
+        tag.decompose()
+
+    text = soup.get_text(separator="\n")
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    cleaned = "\n".join(lines)
+
+    if len(cleaned) < 100:
+        raise ValueError("Page returned too little text — it may require login or block scraping.")
+
+    return cleaned[:8000]
+
+
+def extract_job_from_text(page_text: str) -> dict:
+    """Use AI to pull structured job info from scraped page text."""
+    prompt = f"""Below is the raw text of a job posting web page. Extract the job details.
+
+PAGE TEXT:
+{page_text}
+
+Return ONLY a JSON object (no markdown):
+{{
+  "title": "job title",
+  "company": "company name",
+  "location": "location or null",
+  "description": "a clean 2-4 paragraph summary of the role and requirements",
+  "skills": ["skill1", "skill2"]
+}}
+
+If you cannot find a field, use null. Extract real skills mentioned in the posting."""
+
+    response = model.generate_content(prompt)
+    text = response.text.strip().replace("```json", "").replace("```", "")
+    return json.loads(text)

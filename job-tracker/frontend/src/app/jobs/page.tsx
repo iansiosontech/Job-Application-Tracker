@@ -36,6 +36,9 @@ export default function JobsPage() {
   const [tracking, setTracking] = useState(false);
   const [tracked, setTracked] = useState(false);
   const [error, setError] = useState("");
+  const [jobUrl, setJobUrl] = useState("");
+  const [scraping, setScraping] = useState(false);
+  const [scrapeError, setScrapeError] = useState("");
 
   useEffect(() => {
     api.listJobs().then(setJobs).catch(console.error);
@@ -53,6 +56,21 @@ export default function JobsPage() {
       setError(e?.response?.data?.detail || "Failed to create job");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleScrapeUrl = async () => {
+    if (!jobUrl.trim()) return;
+    setScraping(true);
+    setScrapeError("");
+    try {
+      const job = await api.createJobFromUrl(jobUrl.trim());
+      setJobs((prev) => [job, ...prev]);
+      setJobUrl("");
+    } catch (e: any) {
+      setScrapeError(e?.response?.data?.detail || "Couldn't scrape that URL — try pasting the description manually.");
+    } finally {
+      setScraping(false);
     }
   };
 
@@ -105,6 +123,29 @@ export default function JobsPage() {
     <div className="p-8 max-w-5xl min-h-screen">
       <h1 className="text-2xl font-bold text-white mb-1">Jobs</h1>
       <p className="text-[#8b8b96] mb-6">Paste a job description and get AI-powered match analysis</p>
+
+      {/* Scrape from URL */}
+      <div className="bg-[#16161f] border border-white/[0.08] rounded-xl p-6 mb-6">
+        <h2 className="font-semibold text-white mb-1">Import from URL</h2>
+        <p className="text-xs text-[#8b8b96] mb-4">Paste a job posting link — AI will extract the details automatically. Works best with company career pages (Greenhouse, Lever, etc.).</p>
+        <div className="flex gap-2">
+          <input
+            className="flex-1 bg-[#0d0d14] border border-white/[0.1] text-white rounded-lg px-3 py-2 text-sm placeholder:text-[#5a5a64] focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            placeholder="https://jobs.example.com/role/12345"
+            value={jobUrl}
+            onChange={(e) => setJobUrl(e.target.value)}
+          />
+          <button
+            onClick={handleScrapeUrl}
+            disabled={scraping || !jobUrl.trim()}
+            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+          >
+            {scraping ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            {scraping ? "Importing…" : "Import"}
+          </button>
+        </div>
+        {scrapeError && <p className="text-red-400 text-sm mt-2">{scrapeError}</p>}
+      </div>
 
       {/* Add Job Form */}
       <div className="bg-[#16161f] border border-white/[0.08] rounded-xl p-6 mb-8">

@@ -50,6 +50,11 @@ export const api = {
     return data;
   },
 
+  createJobFromUrl: async (url: string) => {
+    const { data } = await client.post("/api/jobs/from-url", { url });
+    return data;
+  },
+
   // Analysis
   analyzeMatch: async (jobId: string, resumeId: string) => {
     const { data } = await client.post("/api/analysis/match", {
